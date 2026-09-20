@@ -1,0 +1,5 @@
+# Forzar saltos de línea LF aunque se clone en Windows (autocrlf)
+* text=auto eol=lf
+*.png binary
+*.docx binary
+*.pdf binary

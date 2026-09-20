@@ -1,0 +1,468 @@
+{
+  "info": {
+    "name": "TFU UT3 - Flota de ambulancias",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Mirar el header de respuesta X-Instancia para ver qué réplica atendió cada solicitud."
+  },
+  "variable": [
+    {
+      "key": "base",
+      "value": "http://localhost:8080/api/v1"
+    }
+  ],
+  "item": [
+    {
+      "name": "0. Operación",
+      "item": [
+        {
+          "name": "Salud",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base}}/salud",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "salud"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Reiniciar datos (demo)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base}}/demo/reset",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "demo",
+                "reset"
+              ]
+            },
+            "description": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "1. Flota (IGestionFlota)",
+      "item": [
+        {
+          "name": "Listar ambulancias",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base}}/ambulancias",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "ambulancias"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Listar disponibles",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base}}/ambulancias?estado=DISPONIBLE",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "ambulancias"
+              ],
+              "query": [
+                {
+                  "key": "estado",
+                  "value": "DISPONIBLE"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Obtener ambulancia",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base}}/ambulancias/1",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "ambulancias",
+                "1"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Registrar ambulancia",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base}}/ambulancias",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "ambulancias"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"AMB-07\",\n  \"tipo\": \"BASICA\",\n  \"latitud\": -34.87,\n  \"longitud\": -56.17\n}"
+            }
+          }
+        },
+        {
+          "name": "Actualizar ubicación",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base}}/ambulancias/2/ubicacion",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "ambulancias",
+                "2",
+                "ubicacion"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"latitud\": -34.91,\n  \"longitud\": -56.165\n}"
+            }
+          }
+        },
+        {
+          "name": "Pasar a mantenimiento",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base}}/ambulancias/4/estado",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "ambulancias",
+                "4",
+                "estado"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"EN_MANTENIMIENTO\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Volver a disponible",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base}}/ambulancias/4/estado",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "ambulancias",
+                "4",
+                "estado"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"DISPONIBLE\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Emergencias (IRegistroEmergencias)",
+      "item": [
+        {
+          "name": "Registrar emergencia ALTA",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base}}/emergencias",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "emergencias"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"descripcion\": \"Paro cardiorrespiratorio\",\n  \"direccion\": \"Av. 18 de Julio 1200\",\n  \"latitud\": -34.9055,\n  \"longitud\": -56.188,\n  \"prioridad\": \"ALTA\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Registrar emergencia BAJA",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base}}/emergencias",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "emergencias"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"descripcion\": \"Esguince de tobillo\",\n  \"direccion\": \"Grecia 3500\",\n  \"latitud\": -34.887,\n  \"longitud\": -56.25,\n  \"prioridad\": \"BAJA\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Listar pendientes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base}}/emergencias?estado=PENDIENTE",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "emergencias"
+              ],
+              "query": [
+                {
+                  "key": "estado",
+                  "value": "PENDIENTE"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Obtener emergencia",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base}}/emergencias/1",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "emergencias",
+                "1"
+              ]
+            },
+            "description": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Despacho (IDespacho)",
+      "item": [
+        {
+          "name": "Asignar ambulancia",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base}}/despachos",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "despachos"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"emergencia_id\": 1\n}"
+            }
+          }
+        },
+        {
+          "name": "Listar activos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base}}/despachos?estado=ACTIVO",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "despachos"
+              ],
+              "query": [
+                {
+                  "key": "estado",
+                  "value": "ACTIVO"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Finalizar despacho",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base}}/despachos/1/finalizar",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "despachos",
+                "1",
+                "finalizar"
+              ]
+            },
+            "description": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Demo ACID",
+      "item": [
+        {
+          "name": "Atomicidad: asignar con falla simulada",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base}}/despachos?simular_falla=true",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "despachos"
+              ],
+              "query": [
+                {
+                  "key": "simular_falla",
+                  "value": "true"
+                }
+              ]
+            },
+            "description": "Devuelve 500 y deshace todos los cambios.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"emergencia_id\": 1\n}"
+            }
+          }
+        },
+        {
+          "name": "Aislamiento: asignar reteniendo bloqueos 8 s",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base}}/despachos?demora_ms=8000",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "despachos"
+              ],
+              "query": [
+                {
+                  "key": "demora_ms",
+                  "value": "8000"
+                }
+              ]
+            },
+            "description": "Mientras espera, enviar otra asignación desde otra pestaña: queda bloqueada.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"emergencia_id\": 1\n}"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

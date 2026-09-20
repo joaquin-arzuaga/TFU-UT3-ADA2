@@ -1,0 +1,76 @@
+# Sistema de gestión de flota de ambulancias - TFU UT3
+# Uso:  docker compose up -d --build     ->  API en http://localhost:8080/api/v1
+#       docker compose run --rm demo      ->  demo interactiva
+# Única dependencia: Docker + Docker Compose v2 (Linux, Windows o macOS).
+# No se monta ningún archivo del host: todo va dentro de las imágenes.
+name: ambulancias
+
+services:
+
+  # ---------------------------------------------------------------- Datos
+  db:
+    build: ./db                                     # postgres:16 + esquema y datos iniciales
+    environment:
+      POSTGRES_DB: ambulancias
+      POSTGRES_USER: ambulancias
+      POSTGRES_PASSWORD: ambulancias
+    volumes:
+      - datos_db:/var/lib/postgresql/data           # durabilidad: sobrevive al contenedor
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ambulancias -d ambulancias"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  # ------------------------------------------------ API REST (sin estado)
+  api:
+    build: ./api
+    environment:
+      DATABASE_URL: postgresql://ambulancias:ambulancias@db:5432/ambulancias
+      DB_POOL_MAX: "5"
+      DEMO_HABILITADA: "true"
+    depends_on:
+      db:
+        condition: service_healthy
+    deploy:
+      replicas: 3                  # ESCALABILIDAD HORIZONTAL: N copias idénticas
+      resources:
+        limits:                    # (escalar verticalmente = subir estos límites)
+          cpus: "0.50"
+          memory: 256M
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/salud', timeout=2)"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    restart: unless-stopped
+    # Sin "ports": las réplicas no se exponen; solo se accede vía gateway.
+
+  # ----------------------------------------- Gateway / balanceador de carga
+  gateway:
+    build: ./nginx                                  # nginx:1.27 + nginx.conf
+    ports:
+      - "8080:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ------------------------------------------- Demo interactiva (bajo demanda)
+  # No arranca con "up": se ejecuta con  docker compose run --rm demo
+  demo:
+    build: ./api
+    command: ["python", "demo_cli.py"]
+    environment:
+      BASE: http://gateway/api/v1
+      PYTHONIOENCODING: utf-8
+    depends_on:
+      - gateway
+    profiles: ["demo"]
+    stdin_open: true
+    tty: true
+
+volumes:
+  datos_db:
