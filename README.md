@@ -33,7 +33,6 @@ La primera vez tarda 1–3 minutos (descarga imágenes). Levanta:
 PostgreSQL + **3 réplicas** de la API + gateway Nginx.
 
 - API: http://localhost:8080/api/v1
-- Documentación interactiva (se puede probar desde el navegador): http://localhost:8080/docs
 
 ---
 
