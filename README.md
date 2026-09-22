@@ -10,6 +10,7 @@ corren en contenedores. Funciona igual en Windows, Linux (incluido Fedora) y mac
 
 ---
 
+## 1. Requisitos
 
 ### Verificar Docker (cualquier sistema)
 ```
@@ -105,8 +106,9 @@ docker compose down -v     # apaga y borra los datos
 - Cada componente es dueño de su schema en PostgreSQL; nadie toca tablas ajenas.
 - La API **no guarda estado en memoria**: por eso escala horizontalmente detrás de Nginx.
 - La asignación de una ambulancia es **una transacción ACID** que abarca los tres componentes.
-- `api/tests/test_arquitectura.py` verifica automáticamente las reglas de dependencia.
-- Diagramas y documento de la Parte 1 en `docs/`.
+- `api/tests/test_arquitectura.py` verifica automáticamente las reglas de dependencia
+  y que ningún componente escriba SQL sobre el schema de otro.
+- Diagramas en [`docs/`](docs/): modelo de componentes y vista de despliegue.
 
 ### Endpoints (`/api/v1`)
 

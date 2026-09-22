@@ -62,7 +62,9 @@ services:
   # No arranca con "up": se ejecuta con  docker compose run --rm demo
   demo:
     build: ./api
-    command: ["python", "demo_cli.py"]
+    # entrypoint (y no command) para que los argumentos de
+    # "docker compose run --rm demo 4" se AGREGUEN en vez de reemplazarlo.
+    entrypoint: ["python", "demo_cli.py"]
     environment:
       BASE: http://gateway/api/v1
       PYTHONIOENCODING: utf-8

@@ -13,7 +13,7 @@ import time
 
 from app.comun.db import transaccion
 from app.comun.errores import FallaSimulada, NoEncontrado, SinAmbulanciasDisponibles, ErrorDominio
-from app.contratos.despacho import Despacho, IDespacho, OpcionesDemo
+from app.contratos.despacho import ESTADOS_DESPACHO, Despacho, IDespacho, OpcionesDemo
 from app.contratos.emergencias import IEstadoEmergencia
 from app.contratos.flota import Ambulancia, IDisponibilidadFlota
 
@@ -110,6 +110,8 @@ class ServicioDespacho(IDespacho):
         return _a_despacho(fila)
 
     def listar(self, estado=None):
+        if estado is not None and estado not in ESTADOS_DESPACHO:
+            raise ErrorDominio(f"Estado inválido: {estado}. Valores: {ESTADOS_DESPACHO}")
         with transaccion() as cx:
             if estado:
                 filas = cx.execute(
