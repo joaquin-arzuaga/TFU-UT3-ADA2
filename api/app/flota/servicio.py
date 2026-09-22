@@ -5,6 +5,8 @@ Es el único que accede al schema `flota`. Implementa sus dos interfaces
 provistas. No conoce a ningún otro componente (no tiene dependencias
 salientes hacia el dominio), por eso es estable.
 """
+from psycopg.errors import UniqueViolation
+
 from app.comun.db import transaccion
 from app.comun.errores import Conflicto, ErrorDominio, NoEncontrado
 from app.contratos.flota import (
@@ -26,14 +28,18 @@ class ServicioFlota(IGestionFlota, IDisponibilidadFlota):
         if tipo not in TIPOS_AMBULANCIA:
             raise ErrorDominio(f"Tipo inválido: {tipo}. Valores: {TIPOS_AMBULANCIA}")
         with transaccion() as cx:
-            existe = cx.execute("SELECT 1 FROM flota.ambulancias WHERE codigo = %s", (codigo,)).fetchone()
-            if existe:
-                raise Conflicto(f"Ya existe una ambulancia con código {codigo}")
-            fila = cx.execute(
-                f"""INSERT INTO flota.ambulancias (codigo, tipo, latitud, longitud)
-                    VALUES (%s, %s, %s, %s) RETURNING {_COLUMNAS}""",
-                (codigo, tipo, latitud, longitud),
-            ).fetchone()
+            # No alcanza con consultar antes de insertar: entre ese SELECT y el
+            # INSERT, otra réplica puede dar de alta el mismo código (los operadores
+            # trabajan en paralelo). El UNIQUE de la base es la única garantía real;
+            # acá se traduce esa violación al error de dominio que corresponde (409).
+            try:
+                fila = cx.execute(
+                    f"""INSERT INTO flota.ambulancias (codigo, tipo, latitud, longitud)
+                        VALUES (%s, %s, %s, %s) RETURNING {_COLUMNAS}""",
+                    (codigo, tipo, latitud, longitud),
+                ).fetchone()
+            except UniqueViolation:
+                raise Conflicto(f"Ya existe una ambulancia con código {codigo}") from None
         return _a_ambulancia(fila)
 
     def listar(self, estado=None):

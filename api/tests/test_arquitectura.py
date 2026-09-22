@@ -5,6 +5,7 @@ respeten el modelo de componentes documentado.
 Ejecutar desde la carpeta api/:  python -m pytest -q
 """
 import ast
+import re
 from datetime import datetime
 from pathlib import Path
 
@@ -13,6 +14,7 @@ from app.despacho.servicio import elegir_mas_adecuada, tipos_admitidos
 
 APP = Path(__file__).resolve().parents[1] / "app"
 COMPONENTES = {"flota", "emergencias", "despacho"}
+ES_SQL = re.compile(r"\b(SELECT|INSERT\s+INTO|UPDATE|DELETE\s+FROM)\b", re.IGNORECASE)
 
 
 def _imports(componente: str) -> set[str]:
@@ -49,6 +51,39 @@ def test_flota_y_emergencias_no_conocen_a_despacho():
 
 def test_despacho_consume_las_interfaces_requeridas():
     assert {"app.contratos.flota", "app.contratos.emergencias"} <= _imports("despacho")
+
+
+def _literales(archivo: Path):
+    """Strings del archivo. Las f-strings se reconstruyen uniendo sus partes
+    literales: si no, `f"SELECT {_COLUMNAS} FROM flota.ambulancias"` queda
+    partido en trozos y el SELECT se separa del nombre de la tabla."""
+    for nodo in ast.walk(ast.parse(archivo.read_text(encoding="utf-8"))):
+        if isinstance(nodo, ast.JoinedStr):
+            yield "".join(p.value for p in nodo.values if isinstance(p, ast.Constant))
+        elif isinstance(nodo, ast.Constant) and isinstance(nodo.value, str):
+            yield nodo.value
+
+
+def _schemas_ajenos(componente: str) -> set[str]:
+    """Schemas de OTROS componentes nombrados en el SQL de este componente."""
+    ajenos = set()
+    for archivo in (APP / componente).glob("*.py"):
+        for texto in _literales(archivo):
+            if not ES_SQL.search(texto):
+                continue
+            for otro in COMPONENTES - {componente}:
+                if re.search(rf"\b{otro}\.\w+", texto):
+                    ajenos.add(otro)
+    return ajenos
+
+
+def test_cada_componente_solo_toca_su_propio_schema():
+    """Encapsulamiento de datos: lo que un componente necesita de otro lo pide
+    por la interfaz, nunca leyendo ni escribiendo sus tablas."""
+    for c in COMPONENTES:
+        assert _schemas_ajenos(c) == set(), (
+            f"{c} usa SQL sobre el schema de {_schemas_ajenos(c)}; debe pedirlo por la interfaz"
+        )
 
 
 def _amb(id_, tipo, lat, lon):

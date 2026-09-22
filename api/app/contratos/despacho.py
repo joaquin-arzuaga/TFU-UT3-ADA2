@@ -8,6 +8,8 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime
 
+ESTADOS_DESPACHO = ("ACTIVO", "FINALIZADO")
+
 
 @dataclass(frozen=True)
 class Despacho:
